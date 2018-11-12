@@ -70,7 +70,7 @@ public class Client implements Runnable {
         if (args.length == 2) {
             Client client = new Client(args[0], Integer.parseInt(args[1]));
             if (client.socket != null) {
-                client.run();
+                new Thread(client).start();
             } else {
                 cond=false;
                 return;
