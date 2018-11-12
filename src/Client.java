@@ -50,7 +50,7 @@ public class Client implements Runnable {
                 System.out.println("Start!");
                 break;
             case 5:
-                System.out.println("Wygrał drugi gracz");
+                System.out.println("Wygrał drugi gracz, poprawna liczba to: "+odpowiedź);
                 send(0,6);
                 try {
                     socket.close();
