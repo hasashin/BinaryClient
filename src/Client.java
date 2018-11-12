@@ -39,12 +39,15 @@ public class Client implements Runnable {
                 System.out.println("Zła liczba 😢");
                 break;
             case 3:
-                System.out.println("Wygrałeś");
+                System.out.println("Wygrałeś!");
                 send(0,6);
                 try {
                     socket.close();
                 }catch (IOException e){}
                 cond = false;
+                break;
+            case 4:
+                System.out.println("Start!");
                 break;
             case 5:
                 System.out.println("Wygrał drugi gracz");
