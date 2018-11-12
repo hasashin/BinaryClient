@@ -58,6 +58,9 @@ public class Client implements Runnable {
                 catch(IOException eeeee){}
                 cond = false;
                 break;
+            case 6:
+                System.out.println("Czas się skończył.");
+                send(0,6);
 
             default:
                 break;
