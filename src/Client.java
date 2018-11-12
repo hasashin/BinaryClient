@@ -60,7 +60,7 @@ public class Client implements Runnable {
         packet[1] = (byte) (idsesji & 0b00011111);
 
         try {
-            sout.write(packet);
+            sout.write(packet, 0, 2);
         } catch (IOException e) {
 
         }
@@ -72,7 +72,7 @@ public class Client implements Runnable {
             if (client.socket != null) {
                 new Thread(client).start();
             } else {
-                cond=false;
+                cond = false;
                 return;
             }
         }
@@ -83,26 +83,27 @@ public class Client implements Runnable {
         int liczba;
         while (socket.isConnected()) {
             try {
-                if (sin.available()>0){
+                if (System.in.available() > 0) {
+                    liczba = scanner.nextInt();
+                    sendAns(liczba);
+                }
+            } catch (Throwable e) {
+                scanner.next();
+                System.out.println("dupa");
+            }
+            try {
+                if (sin.available() > 0) {
                     sin.read(data);
                     decode(data);
                 }
-            }catch (IOException e){
+            } catch (IOException e) {
                 System.out.println("dupa");
             }
-            if (scanner.hasNext()) {
-                try {
-                    liczba = scanner.nextInt();
-                    sendAns(liczba);
-                } catch (Throwable e) {
-                    System.out.println(e.getMessage());
-                }
-            }
         }
-        try{
+        try {
             socket.close();
+        } catch (IOException e) {
         }
-        catch (IOException e){}
 
 
     }
