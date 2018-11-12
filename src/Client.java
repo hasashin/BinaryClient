@@ -21,9 +21,7 @@ public class Client implements Runnable {
                 sin = new DataInputStream(socket.getInputStream());
                 sout = new DataOutputStream(socket.getOutputStream());
             } else System.out.println("Nie można połączyć: przekroczono czas oczekiwania.");
-        } catch (IOException e) {
-
-        }
+        } catch (IOException e) { }
 
     }
 
@@ -38,7 +36,7 @@ public class Client implements Runnable {
                 this.idsesji = sesja;
                 break;
             case 2:
-                System.out.println("Przegrałeś");
+                System.out.println("Zła liczba, po");
                 break;
             case 3:
                 System.out.println("Wygrałeś");
@@ -46,6 +44,7 @@ public class Client implements Runnable {
                 try {
                     socket.close();
                 }catch (IOException e){}
+                cond = false;
                 break;
             case 5:
                 System.out.println("Wygrał deugi gracz");
@@ -54,6 +53,7 @@ public class Client implements Runnable {
                     socket.close();
                 }
                 catch(IOException eeeee){}
+                cond = false;
                 break;
 
             default:
@@ -93,7 +93,7 @@ public class Client implements Runnable {
     public void run() {
         Scanner scanner = new Scanner(System.in);
         int liczba;
-        while (socket.isConnected()) {
+        while (cond) {
             try {
                 if (System.in.available() > 0) {
                     liczba = scanner.nextInt();
