@@ -36,7 +36,7 @@ public class Client implements Runnable {
                 this.idsesji = sesja;
                 break;
             case 2:
-                System.out.println("Zła liczba, po");
+                System.out.println("Zła liczba 😢");
                 break;
             case 3:
                 System.out.println("Wygrałeś");
@@ -47,7 +47,7 @@ public class Client implements Runnable {
                 cond = false;
                 break;
             case 5:
-                System.out.println("Wygrał deugi gracz");
+                System.out.println("Wygrał drugi gracz");
                 send(0,6);
                 try {
                     socket.close();
