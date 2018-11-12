@@ -39,6 +39,7 @@ public class Client implements Runnable {
             case 1:
                 int czas = data[2];
                 System.out.println("Pozostało "+czas+" sekund");
+                break;
             case 2:
                 System.out.println("Zła liczba 😢");
                 break;
