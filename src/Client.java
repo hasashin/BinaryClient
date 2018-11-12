@@ -36,24 +36,36 @@ public class Client implements Runnable {
             case 0:
                 connected = true;
                 this.idsesji = sesja;
-                System.out.println("Odp: " + odpowiedź + " op: " + operacja + " sid: " + sesja);
                 break;
             case 2:
                 System.out.println("Przegrałeś");
                 break;
             case 3:
                 System.out.println("Wygrałeś");
+                send(0,6);
+                try {
+                    socket.close();
+                }catch (IOException e){}
                 break;
+            case 5:
+                System.out.println("Wygrał deugi gracz");
+                send(0,6);
+                try {
+                    socket.close();
+                }
+                catch(IOException eeeee){}
+                break;
+
             default:
                 break;
         }
 
     }
 
-    void sendAns(int liczba) {
+    void send(int liczba,int operacja) {
         byte[] packet = new byte[2];
 
-        packet[0] = 7;
+        packet[0] = (byte)operacja;
 
         packet[0] = (byte) (packet[0] | ((liczba & 0b00000111) << 3));
 
@@ -85,11 +97,10 @@ public class Client implements Runnable {
             try {
                 if (System.in.available() > 0) {
                     liczba = scanner.nextInt();
-                    sendAns(liczba);
+                    send(liczba,7);
                 }
             } catch (Throwable e) {
                 scanner.next();
-                System.out.println("dupa");
             }
             try {
                 if (sin.available() > 0) {
@@ -97,7 +108,6 @@ public class Client implements Runnable {
                     decode(data);
                 }
             } catch (IOException e) {
-                System.out.println("dupa");
             }
         }
         try {
