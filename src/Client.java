@@ -30,11 +30,15 @@ public class Client implements Runnable {
         odpowiedź = (data[0] & 0b00111000) >> 3;
         operacja = data[0] & 0b00000111;
         sesja = data[1];
+
         switch (operacja) {
             case 0:
                 connected = true;
                 this.idsesji = sesja;
                 break;
+            case 1:
+                int czas = data[2];
+                System.out.println("Pozostało "+czas+" sekund");
             case 2:
                 System.out.println("Zła liczba 😢");
                 break;
