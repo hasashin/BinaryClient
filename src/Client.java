@@ -75,7 +75,7 @@ public class Client implements Runnable {
     }
 
     private void send(int liczba, int operacja) {
-        byte[] packet = new byte[2];
+        byte[] packet = new byte[3];
 
         packet[0] = (byte) operacja;
 
@@ -84,7 +84,7 @@ public class Client implements Runnable {
         packet[1] = (byte) (idsesji & 0b00011111);
 
         try {
-            sout.write(packet, 0, 2);
+            sout.write(packet, 0, 3);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
