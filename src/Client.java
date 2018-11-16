@@ -27,7 +27,7 @@ public class Client implements Runnable {
         odpowiedz = (data[0] & 0b00111000) >> 3;
         operacja = data[0] & 0b00000111;
         sesja = data[1];
-        if(idsesji != 0 && sesja == idsesji) {
+        if(idsesji == 0 || sesja == idsesji) {
             switch (operacja) {
                 case 0:
                     this.idsesji = sesja;
@@ -121,7 +121,9 @@ public class Client implements Runnable {
                     len = sin.read(data);
                     if (len == -1) {
                         cond = false;
-                    } else decode(data);
+                    } else {
+                        decode(data);
+                    }
                 }
             } catch (IOException e) {
                 System.err.println(e.getMessage());
