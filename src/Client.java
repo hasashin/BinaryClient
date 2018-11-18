@@ -9,6 +9,7 @@ public class Client implements Runnable {
     private DataInputStream sin;
     private DataOutputStream sout;
     private static boolean cond = true;
+    private boolean ingame = false;
 
     private Client(String inet, int port) {
         try {
@@ -22,71 +23,88 @@ public class Client implements Runnable {
 
     }
 
-    private void decode(byte[] data) {
-        int odpowiedz, sesja, operacja;
-        odpowiedz = (data[0] & 0b00111000) >> 3;
-        operacja = data[0] & 0b00000111;
-        sesja = data[1];
-        if(idsesji == 0 || sesja == idsesji) {
-            switch (operacja) {
-                case 0:
-                    this.idsesji = sesja;
-                    break;
-                case 1:
-                    int czas = data[2];
-                    System.out.println("Pozostało " + czas + " sekund");
-                    break;
-                case 2:
-                    System.out.println("Zła liczba 😢");
-                    break;
-                case 3:
-                    System.out.println("Wygrałeś!");
-                    send(0, 6);
-                    try {
-                        socket.close();
-                    } catch (IOException e) {
-                        System.err.println(e.getMessage());
-                    }
-                    cond = false;
-                    break;
-                case 4:
+    void execute(int operacja, int odpowiedz, int liczba, int czas, int sesja) {
+        switch (operacja) {
+            case 2:
+                if (odpowiedz == 0) {
                     System.out.println("Start!");
-                    break;
-                case 5:
-                    System.out.println("Wygrał drugi gracz, poprawna liczba to: " + odpowiedz);
-                    send(0, 6);
-                    try {
-                        socket.close();
-                    } catch (IOException eeeee) {
-                        System.err.println(eeeee.getMessage());
+                    ingame = true;
+                }
+                break;
+            case 3:
+                if (ingame) {
+                    if (odpowiedz == 1) {
+                        System.out.println("Zła liczba 😢");
                     }
-                    cond = false;
-                    break;
-                case 6:
+                    if (odpowiedz == 2) {
+                        System.out.println("Pozostało " + czas + " sekund");
+                    }
+                }
+                break;
+            case 7:
+                if (odpowiedz == 0) {
+                    System.out.println("Wygrał drugi gracz, poprawna liczba to: " + liczba);
+
+                }
+                if (odpowiedz == 1) {
+                    System.out.println("Wygrałeś!");
+                }
+                if (odpowiedz == 2) {
                     System.out.println("Czas się skończył.");
-                    send(0, 6);
-                    cond = false;
-                    break;
-                default:
-                    break;
-            }
+                }
+                send(0, 7, 7, idsesji);
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    System.err.println(e.getMessage());
+                }
+                ingame = cond = false;
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void decode(byte[] data) {
+
+        int odpowiedz, sesja, operacja, liczba, czas;
+
+        operacja = (data[0] & 0b11100000) >> 5;
+        odpowiedz = (data[0] & 0b00011100) >> 2;
+        sesja = ((data[0] & 0b00000011) << 3) | ((data[1] & 0b11100000) >> 5);
+        liczba = ((data[1] & 0b00011111) << 3) | ((data[2] & 0b11100000) >> 5);
+        czas = ((data[2] & 0b00011111) << 3) | ((data[3] & 0b11100000) >> 5);
+
+        if (sesja == idsesji) {
+            execute(operacja, odpowiedz, liczba, czas, sesja);
+        } else {
+            if (operacja == 0 && odpowiedz == 0) {
+                this.idsesji = sesja;
+            } else
+                System.out.println("Odebrano niepoprawny komunikat od serwera");
         }
 
     }
 
-    private void send(int liczba, int operacja) {
-        byte[] packet = new byte[3];
+    private byte[] generujPakiet(int operacja, int odpowiedz, int id, int liczba) {
+        byte[] packet = new byte[4];
 
-        packet[0] = (byte) operacja;
+        packet[0] = (byte) ((operacja & 0b00000111) << 5);
+        packet[0] = (byte) (packet[0] | (byte) ((odpowiedz & 0b00000111) << 2));
+        packet[0] = (byte) (packet[0] | (byte) ((id & 0b00011000) >> 3));
 
-        packet[0] = (byte) (packet[0] | ((liczba & 0b00000111) << 3));
+        packet[1] = (byte) ((id & 0b00000111) << 5);
+        packet[1] = (byte) (packet[1] | (byte) ((liczba & 0b11111000) >> 3));
 
-        packet[1] = (byte) (idsesji & 0b00011111);
+        packet[2] = (byte) ((liczba & 0b00000111) << 5);
+        return packet;
+    }
 
+    private void send(int liczba, int operacja, int odpowiedz, int id) {
         try {
-            sout.write(packet, 0, 3);
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
+            sout.write(generujPakiet(operacja, odpowiedz, id, liczba), 0, 4);
+        } catch (IOException r) {
+            System.err.println(r.getMessage());
         }
     }
 
@@ -106,12 +124,12 @@ public class Client implements Runnable {
     public void run() {
         Scanner scanner = new Scanner(System.in);
         int liczba, len;
-        byte[] data = new byte[3];
+        byte[] data = new byte[4];
         while (cond) {
             try {
                 if (System.in.available() > 0) {
                     liczba = scanner.nextInt();
-                    send(liczba, 7);
+                    send(liczba, 3, 0, idsesji);
                 }
             } catch (Throwable e) {
                 scanner.next();
