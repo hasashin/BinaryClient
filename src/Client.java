@@ -23,7 +23,7 @@ public class Client implements Runnable {
 
     }
 
-    void execute(int operacja, int odpowiedz, int liczba, int czas, int sesja) {
+    private void execute(int operacja, int odpowiedz, int liczba, int czas, int sesja) {
         switch (operacja) {
             case 2:
                 if (odpowiedz == 0) {
