@@ -34,10 +34,13 @@ public class Client implements Runnable {
             case 3:
                 if (ingame) {
                     if (odpowiedz == 1) {
-                        System.out.println("Zła liczba 😢");
+                        System.out.println("Liczba jest za mała");
                     }
                     if (odpowiedz == 2) {
                         System.out.println("Pozostało " + czas + " sekund");
+                    }
+                    if (odpowiedz == 4){
+                        System.out.println("Liczba jest za duża");
                     }
                 }
                 break;
