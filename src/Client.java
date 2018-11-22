@@ -17,6 +17,7 @@ public class Client implements Runnable {
             socket = new Socket(inet, port);
             sin = new DataInputStream(socket.getInputStream());
             sout = new DataOutputStream(socket.getOutputStream());
+            System.out.println("Otrzymane ID = " + idsesji);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -100,6 +101,14 @@ public class Client implements Runnable {
         packet[1] = (byte) (packet[1] | (byte) ((liczba & 0b11111000) >> 3));
 
         packet[2] = (byte) ((liczba & 0b00000111) << 5);
+
+        System.out.println("Wysłano:");
+        for(int i = 0;i<packet.length;i++){
+            String s1 = String.format("%8s", Integer.toBinaryString(packet[i] & 0xFF)).replace(' ', '0');
+            System.out.print(s1+" ");
+        }
+        System.out.print("\n do klienta "+id+"\n");
+
         return packet;
     }
 
@@ -116,6 +125,7 @@ public class Client implements Runnable {
             Client client = new Client(args[0], Integer.parseInt(args[1]));
             if (client.socket != null) {
                 System.out.println("Połączono z serwerem " + args[0] + ":" + args[1]);
+
                 new Thread(client).start();
             } else {
                 System.out.println("Nie można było połączyć z serwerem");
