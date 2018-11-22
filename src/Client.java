@@ -17,7 +17,6 @@ public class Client implements Runnable {
             socket = new Socket(inet, port);
             sin = new DataInputStream(socket.getInputStream());
             sout = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Otrzymane ID = " + idsesji);
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -84,6 +83,7 @@ public class Client implements Runnable {
         } else {
             if (operacja == 0 && odpowiedz == 0) {
                 this.idsesji = sesja;
+                System.out.println("Otrzymano ID "+idsesji);
             } else
                 System.out.println("Odebrano niepoprawny komunikat od serwera");
         }
