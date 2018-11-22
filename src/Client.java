@@ -14,7 +14,11 @@ public class Client implements Runnable {
     private Client(String inet, int port) {
         try {
             System.out.println("Oczekiwanie na połączenie...");
+
+            //stworzenie gniazda i nawiązanie połączenia z serwerem
             socket = new Socket(inet, port);
+
+            //stworzenie obiektów obsługujących wejście/wyjście
             sin = new DataInputStream(socket.getInputStream());
             sout = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
@@ -24,6 +28,8 @@ public class Client implements Runnable {
     }
 
     private void execute(int operacja, int odpowiedz, int liczba, int czas, int sesja) {
+
+        //reakcje na komunikaty serwera
         switch (operacja) {
             case 2:
                 if (odpowiedz == 0) {
@@ -45,6 +51,9 @@ public class Client implements Runnable {
                 }
                 break;
             case 7:
+
+                //niezależnie od odpowiedzi serwera, otrzymanie komunikatu z operacją zakończenia
+                //powoduje zamknięcie połączenia i zakończenie pracy
                 if (odpowiedz == 0) {
                     System.out.println("Wygrał drugi gracz, poprawna liczba to: " + liczba);
 
@@ -55,12 +64,16 @@ public class Client implements Runnable {
                 if (odpowiedz == 2) {
                     System.out.println("Czas się skończył.");
                 }
+
+                //powiadomienie serwera o rozłączeniu
                 send(0, 7, 7, idsesji);
                 try {
                     socket.close();
                 } catch (IOException e) {
                     System.err.println(e.getMessage());
                 }
+
+                //ustawienie warunku zakońćzenia pętli gry
                 ingame = cond = false;
                 break;
             default:
@@ -70,6 +83,8 @@ public class Client implements Runnable {
 
     private void decode(byte[] data) {
 
+
+        //algorytm odczytu danych jest identyczny jak w serwerze
         int odpowiedz, sesja, operacja, liczba, czas;
 
         operacja = (data[0] & 0b11100000) >> 5;
@@ -82,6 +97,9 @@ public class Client implements Runnable {
             execute(operacja, odpowiedz, liczba, czas, sesja);
         } else {
             if (operacja == 0 && odpowiedz == 0) {
+
+                //osobna reakcja na otrzymanie id, ponieważ w tym momencie klient nie wie jakie id dostanie
+                //więc sprawdzanie poprawności komunikatu zakończy się niepowodzeniem
                 this.idsesji = sesja;
                 System.out.println("Otrzymano ID "+idsesji);
             } else
@@ -91,6 +109,8 @@ public class Client implements Runnable {
     }
 
     private byte[] generujPakiet(int operacja, int odpowiedz, int id, int liczba) {
+
+        //algorytm generowania komunikatu jest identyczna jak w serwerze
         byte[] packet = new byte[4];
 
         packet[0] = (byte) ((operacja & 0b00000111) << 5);
@@ -114,6 +134,8 @@ public class Client implements Runnable {
 
     private void send(int liczba, int operacja, int odpowiedz, int id) {
         try {
+
+            //wysłanie komunikatu wygenerowanego na podstawie wartości zmiennych
             sout.write(generujPakiet(operacja, odpowiedz, id, liczba), 0, 4);
         } catch (IOException r) {
             System.err.println(r.getMessage());
@@ -122,12 +144,19 @@ public class Client implements Runnable {
 
     public static void main(String[] args) {
         if (args.length == 2) {
+
+            //stworzenie obiektu klienta
             Client client = new Client(args[0], Integer.parseInt(args[1]));
             if (client.socket != null) {
+
+                //reakcja na otrzymanie połączenia
                 System.out.println("Połączono z serwerem " + args[0] + ":" + args[1]);
 
+                //uruchomienie wątku z pętlą gry
                 new Thread(client).start();
             } else {
+
+                //reakcja na brak połączenia z serwerem
                 System.out.println("Nie można było połączyć z serwerem");
                 cond = false;
             }
@@ -140,19 +169,34 @@ public class Client implements Runnable {
         byte[] data = new byte[4];
         while (cond) {
             try {
+
+                //sprawdzenie czy użytkownik wpisał wartość
                 if (System.in.available() > 0) {
                     liczba = scanner.nextInt();
+
+                    //wysłanie wpisanej wartości
                     send(liczba, 3, 0, idsesji);
                 }
             } catch (Throwable e) {
+
+                //ignorowanie danych niemożliwych do konwersji na liczbę
                 scanner.next();
             }
             try {
+
+                //sprawdzenie czy na wejściu gniazda pojawił się komunikat
                 if (sin.available() > 0) {
+
+                    //odczytanie komunikatu
                     len = sin.read(data);
+
                     if (len == -1) {
+
+                        //zakończenie pracy klienta w momencie zerwania połączenia
                         cond = false;
                     } else {
+
+                        //odczytanie komunikatu, który przyszedł od serwera
                         decode(data);
                     }
                 }
@@ -160,6 +204,8 @@ public class Client implements Runnable {
                 System.err.println(e.getMessage());
             }
         }
+
+        //zamknięcie gniazda po zakończeniu pętli gry
         try {
             socket.close();
         } catch (IOException e) {
